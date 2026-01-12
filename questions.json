@@ -1,0 +1,364 @@
+{
+  "questions": [
+    {
+      "question": "The term 'military tattoo' originates from a phrase in which language and what does it mean?",
+      "choices": [
+        "French – meaning 'prepare for battle'",
+        "Dutch – meaning 'turn off the taps'",
+        "German – meaning 'march together'",
+        "Latin – meaning 'sound the drums'"
+      ],
+      "correct_answer": "Dutch – meaning 'turn off the taps'",
+      "hint": "It comes from a 17th-century phrase telling innkeepers to stop serving beer to soldiers.",
+      "reference": "https://en.wikipedia.org/wiki/Royal_Edinburgh_Military_Tattoo#Etymology"
+    },
+    {
+      "question": "Against which iconic backdrop is the annual Royal Edinburgh Military Tattoo performed?",
+      "choices": [
+        "Buckingham Palace",
+        "Edinburgh Castle",
+        "Sydney Opera House",
+        "Tower of London"
+      ],
+      "correct_answer": "Edinburgh Castle",
+      "hint": "It's a historic fortress in Scotland's capital city.",
+      "reference": "https://www.edinburghfestivalcity.com/inspiration/5-10-facts-about-the-royal-edinburgh-military-tattoo"
+    },
+    {
+      "question": "The world's largest ever Royal Edinburgh Military Tattoo took place in October 2019 at which venue?",
+      "choices": [
+        "ANZ Stadium in Sydney",
+        "Edinburgh Castle Esplanade",
+        "Melbourne Cricket Ground",
+        "London Wembley Stadium"
+      ],
+      "correct_answer": "ANZ Stadium in Sydney",
+      "hint": "It was held in a large Olympic stadium in Australia.",
+      "reference": "https://en.wikipedia.org/wiki/Royal_Edinburgh_Military_Tattoo"
+    },
+    {
+      "question": "Which traditional Scottish instrument, known for its droning sound, is iconic in military tattoo performances?",
+      "choices": [
+        "Bagpipes",
+        "Violin",
+        "Didgeridoo",
+        "Harp"
+      ],
+      "correct_answer": "Bagpipes",
+      "hint": "Massed ranks of this wind instrument are a famous sight and sound at the Tattoo.",
+      "reference": "https://www.abc.net.au/news/2025-05-11/royal-edinburgh-military-tattoo-exclusive-brisbane-celebration/105278048"
+    },
+    {
+      "question": "Which conflict was referred to as \"the war to end all wars\"?",
+      "choices": [
+        "World War I",
+        "World War II",
+        "The Napoleonic Wars",
+        "The Cold War"
+      ],
+      "correct_answer": "World War I",
+      "hint": "It was a hopeful label given to the Great War due to its unprecedented carnage.",
+      "reference": "https://www.history.com/this-day-in-history/november-11/world-war-i-ends"
+    },
+    {
+      "question": "Who was the first woman to win a Nobel Prize?",
+      "choices": [
+        "Marie Curie",
+        "Mother Teresa",
+        "Rosalind Franklin",
+        "Jane Addams"
+      ],
+      "correct_answer": "Marie Curie",
+      "hint": "She won in 1903 for her work on radiation, sharing the honor with her husband and Henri Becquerel.",
+      "reference": "https://www.nobelprize.org/stories/women-who-changed-science/marie-curie"
+    },
+    {
+      "question": "In what year did the Berlin Wall fall, symbolizing the end of the Cold War divide in Europe?",
+      "choices": [
+        "1989",
+        "1985",
+        "1991",
+        "1979"
+      ],
+      "correct_answer": "1989",
+      "hint": "It happened on November 9 of that year, amid a wave of revolutions in Eastern Europe.",
+      "reference": "https://en.wikipedia.org/wiki/Fall_of_the_Berlin_Wall"
+    },
+    {
+      "question": "Who served as the first Prime Minister of Australia?",
+      "choices": [
+        "Sir Edmund Barton",
+        "Alfred Deakin",
+        "Sir Henry Parkes",
+        "Sir John Monash"
+      ],
+      "correct_answer": "Sir Edmund Barton",
+      "hint": "He took office at the Federation of Australia on January 1, 1901.",
+      "reference": "https://peo.gov.au/understand-our-parliament/your-questions-on-notice/questions/who-was-the-first-prime-minister"
+    },
+    {
+      "question": "Who was the first woman to serve as Prime Minister of Australia?",
+      "choices": [
+        "Julia Gillard",
+        "Margaret Thatcher",
+        "Indira Gandhi",
+        "Quentin Bryce"
+      ],
+      "correct_answer": "Julia Gillard",
+      "hint": "She took office in 2010 as Australia's 27th Prime Minister.",
+      "reference": "https://www.naa.gov.au/explore-collection/australias-prime-ministers/julia-gillard"
+    },
+    {
+      "question": "Which country has the longest total coastline in the world?",
+      "choices": [
+        "Canada",
+        "Indonesia",
+        "Russia",
+        "Australia"
+      ],
+      "correct_answer": "Canada",
+      "hint": "This country has a vast Arctic archipelago, giving it over 200,000 km of coast.",
+      "reference": "https://www.worldatlas.com/oceans/countries-with-the-longest-coastline.html"
+    },
+    {
+      "question": "Which is the world's largest desert by area?",
+      "choices": [
+        "Antarctic Desert",
+        "Sahara Desert",
+        "Arabian Desert",
+        "Gobi Desert"
+      ],
+      "correct_answer": "Antarctic Desert",
+      "hint": "This desert is cold and ice-covered, nearly twice the size of the Sahara.",
+      "reference": "https://www.aurora-expeditions.com/blog/is-antarctica-a-desert"
+    },
+    {
+      "question": "What is the southernmost national capital city in the world?",
+      "choices": [
+        "Wellington, New Zealand",
+        "Canberra, Australia",
+        "Buenos Aires, Argentina",
+        "Cape Town, South Africa"
+      ],
+      "correct_answer": "Wellington, New Zealand",
+      "hint": "This city in New Zealand lies at latitude about 41° South.",
+      "reference": "https://en.wikipedia.org/wiki/Wellington"
+    },
+    {
+      "question": "What is the capital city of Canada?",
+      "choices": [
+        "Ottawa",
+        "Toronto",
+        "Vancouver",
+        "Montreal"
+      ],
+      "correct_answer": "Ottawa",
+      "hint": "This city in Ontario was chosen by Queen Victoria as the capital in 1857.",
+      "reference": "https://en.wikipedia.org/wiki/Ottawa"
+    },
+    {
+      "question": "Which Australian state is the largest by area?",
+      "choices": [
+        "Western Australia",
+        "Queensland",
+        "New South Wales",
+        "Northern Territory"
+      ],
+      "correct_answer": "Western Australia",
+      "hint": "It covers roughly one-third of the Australian continent.",
+      "reference": "https://www.ebsco.com/blogs/ebsco/post/western-australia-largest-state"
+    },
+    {
+      "question": "What is the highest mountain in Australia (mainland)?",
+      "choices": [
+        "Mount Kosciuszko",
+        "Mount Everest",
+        "Mount Kilimanjaro",
+        "Mount Cook"
+      ],
+      "correct_answer": "Mount Kosciuszko",
+      "hint": "This peak in New South Wales reaches 2,228 meters above sea level.",
+      "reference": "https://en.wikipedia.org/wiki/Mount_Kosciuszko"
+    },
+    {
+      "question": "Which country spans the most time zones (including overseas territories)?",
+      "choices": [
+        "France",
+        "Russia",
+        "United States",
+        "Australia"
+      ],
+      "correct_answer": "France",
+      "hint": "Thanks to its many overseas territories, a European country holds this record (12 time zones).",
+      "reference": "https://www.timeanddate.com/time/country-with-the-most-time-zones.html"
+    },
+    {
+      "question": "What is the only mammal capable of true flight?",
+      "choices": [
+        "Bat",
+        "Flying squirrel",
+        "Ostrich",
+        "Penguin"
+      ],
+      "correct_answer": "Bat",
+      "hint": "No, it's not a bird – this flying creature is nocturnal and uses echolocation.",
+      "reference": "https://en.wikipedia.org/wiki/Bat_flight"
+    },
+    {
+      "question": "What is considered the world's most venomous snake by toxicity of venom?",
+      "choices": [
+        "Inland Taipan (fierce snake)",
+        "King Cobra",
+        "Black Mamba",
+        "Russell's Viper"
+      ],
+      "correct_answer": "Inland Taipan (fierce snake)",
+      "hint": "This shy Australian snake's drop-for-drop venom can kill 100 men, earning it the title 'fierce snake'.",
+      "reference": "https://en.wikipedia.org/wiki/Inland_taipan"
+    },
+    {
+      "question": "Which animal is the fastest in the world, able to reach dive speeds over 300 km/h?",
+      "choices": [
+        "Peregrine Falcon",
+        "Cheetah",
+        "Sailfish",
+        "Pronghorn Antelope"
+      ],
+      "correct_answer": "Peregrine Falcon",
+      "hint": "This bird of prey swoops down on its targets at astonishing speeds, far faster than any land animal.",
+      "reference": "https://en.wikipedia.org/wiki/Peregrine_falcon"
+    },
+    {
+      "question": "What is the largest species of shark (and also the largest fish) in the world?",
+      "choices": [
+        "Whale Shark",
+        "Great White Shark",
+        "Megalodon (extinct)",
+        "Basking Shark"
+      ],
+      "correct_answer": "Whale Shark",
+      "hint": "This gentle giant of the ocean is a filter-feeder that can grow over 60 feet long.",
+      "reference": "https://ocean.si.edu/ocean-life/sharks-rays/what-biggest-shark-chart-shows-diversity-shark-sizes"
+    },
+    {
+      "question": "What is the brightest star in the night sky as seen from Earth (excluding the sun)?",
+      "choices": [
+        "Sirius",
+        "Polaris",
+        "Alpha Centauri",
+        "Betelgeuse"
+      ],
+      "correct_answer": "Sirius",
+      "hint": "Known as the Dog Star, it's a blazing star in the constellation Canis Major.",
+      "reference": "https://www.space.com/21702-sirius-brightest-star.html"
+    },
+    {
+      "question": "Which planet is often called the 'Morning Star' or 'Evening Star' due to its brightness?",
+      "choices": [
+        "Venus",
+        "Mars",
+        "Mercury",
+        "Jupiter"
+      ],
+      "correct_answer": "Venus",
+      "hint": "It's the second planet from the Sun and shines brightly near sunrise or sunset.",
+      "reference": "https://www.skyatnightmagazine.com/space-science/venus-morning-star-evening-star"
+    },
+    {
+      "question": "Which famous composer continued to write music, including his Ninth Symphony, even after becoming completely deaf?",
+      "choices": [
+        "Ludwig van Beethoven",
+        "Wolfgang Amadeus Mozart",
+        "Johann Sebastian Bach",
+        "Joseph Haydn"
+      ],
+      "correct_answer": "Ludwig van Beethoven",
+      "hint": "He composed 'Ode to Joy' in his final symphony without being able to hear the notes.",
+      "reference": "https://www.mso.com.au/the-blog/2022-how-did-beethoven-write-one-of-his-greatest-compositions-while-deaf"
+    },
+    {
+      "question": "Shylock, the Jewish moneylender character, appears in which Shakespeare play?",
+      "choices": [
+        "The Merchant of Venice",
+        "Hamlet",
+        "Macbeth",
+        "Othello"
+      ],
+      "correct_answer": "The Merchant of Venice",
+      "hint": "This play's title refers to a city in Italy, and Shylock demands a 'pound of flesh' as repayment.",
+      "reference": "https://en.wikipedia.org/wiki/Shylock"
+    },
+    {
+      "question": "Which Australian poet wrote the ballads \"Waltzing Matilda\" and \"The Man from Snowy River\"?",
+      "choices": [
+        "Banjo Paterson",
+        "Henry Lawson",
+        "Dorothea Mackellar",
+        "C.J. Dennis"
+      ],
+      "correct_answer": "Banjo Paterson",
+      "hint": "He was a bush poet whose real first names were Andrew Barton.",
+      "reference": "https://en.wikipedia.org/wiki/Waltzing_Matilda"
+    },
+    {
+      "question": "Which famous artist cut off part of his own ear in 1888 during a fit of mental distress?",
+      "choices": [
+        "Vincent van Gogh",
+        "Pablo Picasso",
+        "Salvador Dalí",
+        "Claude Monet"
+      ],
+      "correct_answer": "Vincent van Gogh",
+      "hint": "This Dutch Post-Impressionist later painted a self-portrait with a bandaged ear.",
+      "reference": "https://www.history.com/this-day-in-history/december-23/van-gogh-chops-off-ear"
+    },
+    {
+      "question": "The landscapes of which country were famously used to film the \"Lord of the Rings\" trilogy?",
+      "choices": [
+        "New Zealand",
+        "Ireland",
+        "Canada",
+        "Scotland"
+      ],
+      "correct_answer": "New Zealand",
+      "hint": "This island nation in the southern hemisphere provided Middle-earth's scenery, from Hobbiton to Mordor.",
+      "reference": "https://www.newzealand.com/us/feature/the-lord-of-the-rings-trilogy-filming-locations"
+    },
+    {
+      "question": "Who invented the World Wide Web (WWW) in 1989 while working at CERN?",
+      "choices": [
+        "Tim Berners-Lee",
+        "Bill Gates",
+        "Steve Jobs",
+        "Alan Turing"
+      ],
+      "correct_answer": "Tim Berners-Lee",
+      "hint": "He's an English computer scientist who proposed the web to help scientists share information.",
+      "reference": "https://home.cern/science/computing/birth-web"
+    },
+    {
+      "question": "Which is the only country that is also a continent?",
+      "choices": [
+        "Australia",
+        "Greenland",
+        "Antarctica",
+        "India"
+      ],
+      "correct_answer": "Australia",
+      "hint": "It's the smallest continent and is a single nation, often called the "island continent."",
+      "reference": "https://askfilo.com/user-question-answers-smart-solutions/question-what-is-the-only-country-that-is-also-a-continent-3336333034323932"
+    },
+    {
+      "question": "Which animal appears alongside the kangaroo on the Australian coat of arms?",
+      "choices": [
+        "Emu",
+        "Koala",
+        "Platypus",
+        "Dingo"
+      ],
+      "correct_answer": "Emu",
+      "hint": "This large flightless bird, native to Australia, was chosen because it cannot easily walk backward.",
+      "reference": "https://en.wikipedia.org/wiki/Coat_of_arms_of_Australia"
+    }
+  ]
+}

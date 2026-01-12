@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Trivia Challenge</title>
+    <style>
+        /**
+         * GLOBAL STYLES
+         * Base styling for the entire application
+         */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        /**
+         * MAIN CONTAINER
+         * Central game container with card styling
+         */
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /**
+         * HEADER SECTION
+         */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .player-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .player-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            object-fit: cover;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .player-name {
+            color: #667eea;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-container {
+            background: #f0f0f0;
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        /**
+         * VIEW SECTIONS
+         * Different game states (question, waiting, disagreement, etc.)
+         */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /**
+         * QUESTION DISPLAY
+         */
+        .question-box {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .hint-container {
+            margin-top: 15px;
+        }
+
+        .hint-button {
+            background: #ffd93d;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .hint-button:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+        }
+
+        .hint-text {
+            display: none;
+            margin-top: 10px;
+            padding: 15px;
+            background: #fffef0;
+            border-radius: 8px;
+            color: #666;
+            font-style: italic;
+            border-left: 3px solid #ffd93d;
+        }
+
+        .hint-text.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        /**
+         * ANSWER CHOICES
+         */
+        .choices {
+            margin: 20px 0;
+        }
+
+        .choice-button {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            margin: 12px 0;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: left;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .choice-button:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateX(5px);
+        }
+
+        .choice-button.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .choice-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /**
+         * ACTION BUTTONS
+         */
+        .action-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /**
+         * WAITING STATE
+         */
+        .waiting-view {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .waiting-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .waiting-text {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .waiting-subtext {
+            font-size: 14px;
+            color: #999;
+        }
+
+        /**
+         * DISAGREEMENT VIEW
+         */
+        .disagreement-view {
+            padding: 20px;
+        }
+
+        .disagreement-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .disagreement-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+
+        .disagreement-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .disagreement-subtitle {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .answers-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .answer-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .answer-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .answer-value {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .resolution-prompt {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            text-align: center;
+        }
+
+        .resolution-text {
+            font-size: 18px;
+            color: #856404;
+            font-weight: 600;
+        }
+
+        /**
+         * COMPLETION VIEW
+         */
+        .completion-view {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .celebration-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .completion-title {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .completion-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .ticket-reveal {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 30px 0;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .ticket-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .ticket-details {
+            text-align: left;
+            margin: 20px 0;
+            line-height: 2;
+        }
+
+        .ticket-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ticket-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .ticket-label {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .ticket-value {
+            font-weight: 400;
+        }
+
+        .ticket-highlight {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .event-link {
+            margin-top: 20px;
+        }
+
+        .event-link a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 2px solid white;
+            transition: all 0.3s;
+        }
+
+        .event-link a:hover {
+            opacity: 0.8;
+        }
+
+        /**
+         * ERROR STATE
+         */
+        .error-view {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #dc3545;
+        }
+
+        .error-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .retry-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .retry-button:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        /**
+         * LOADING STATE
+         */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /**
+         * RESPONSIVE DESIGN
+         * Adjustments for mobile devices
+         */
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            .player-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .player-avatar {
+                width: 70px;
+                height: 70px;
+            }
+
+            .player-name {
+                font-size: 20px;
+            }
+
+            .question-text {
+                font-size: 18px;
+            }
+
+            .choice-button {
+                padding: 15px;
+                font-size: 15px;
+            }
+
+            .answers-comparison {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .ticket-reveal {
+                padding: 25px;
+            }
+
+            .ticket-title {
+                font-size: 22px;
+            }
+
+            .ticket-details {
+                font-size: 14px;
+            }
+
+            .completion-title {
+                font-size: 26px;
+            }
+        }
+
+        /**
+         * UTILITY CLASSES
+         */
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="player-header">
+                <img id="playerAvatar" class="player-avatar" alt="Player Avatar">
+                <div class="player-name">
+                    Welcome, <span id="playerNameDisplay"></span>!
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-text">
+                    Question <span id="currentQuestionNum">0</span> of <span id="totalQuestions">0</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTION VIEW -->
+        <div id="questionView" class="view">
+            <div class="question-box">
+                <div class="question-text" id="questionText"></div>
+                <div class="hint-container">
+                    <button class="hint-button" id="hintButton">💡 Need a hint?</button>
+                    <div class="hint-text" id="hintText"></div>
+                </div>
+            </div>
+            
+            <div class="choices" id="choicesContainer"></div>
+            
+            <div class="text-center mt-20">
+                <button class="action-button" id="submitButton" disabled>
+                    Submit Answer
+                </button>
+            </div>
+        </div>
+
+        <!-- WAITING VIEW -->
+        <div id="waitingView" class="view waiting-view">
+            <div class="waiting-icon">⏳</div>
+            <div class="waiting-text">Answer submitted successfully!</div>
+            <div class="waiting-subtext">
+                Waiting for <span id="otherPlayerName"></span> to answer...
+            </div>
+        </div>
+
+        <!-- DISAGREEMENT VIEW -->
+        <div id="disagreementView" class="view disagreement-view">
+            <div class="disagreement-header">
+                <div class="disagreement-icon">🤔</div>
+                <div class="disagreement-title">You gave different answers!</div>
+                <div class="disagreement-subtitle">
+                    Discuss and decide which answer is correct
+                </div>
+            </div>
+
+            <div class="question-box">
+                <div class="question-text" id="disagreementQuestionText"></div>
+            </div>
+
+            <div class="answers-comparison">
+                <div class="answer-card">
+                    <div class="answer-label">Lachlan's Answer</div>
+                    <div class="answer-value" id="lachlanAnswer"></div>
+                </div>
+                <div class="answer-card">
+                    <div class="answer-label">Leigh's Answer</div>
+                    <div class="answer-value" id="leighAnswer"></div>
+                </div>
+            </div>
+
+            <div class="resolution-prompt">
+                <div class="resolution-text">
+                    Which answer do you both agree on?
+                </div>
+            </div>
+
+            <div class="choices" id="disagreementChoicesContainer"></div>
+
+            <div class="text-center mt-20">
+                <button class="action-button" id="resolveButton" disabled>
+                    Submit Agreed Answer
+                </button>
+            </div>
+        </div>
+
+        <!-- COMPLETION VIEW -->
+        <div id="completionView" class="view completion-view">
+            <div class="celebration-icon">🎉</div>
+            <div class="completion-title">Congratulations!</div>
+            <div class="completion-message">
+                You worked together brilliantly to answer all the questions correctly!<br>
+                Now it's time to reveal your special birthday surprise...
+            </div>
+
+            <div class="ticket-reveal">
+                <div class="ticket-title">🎭 Your Birthday Gift 🎭</div>
+                
+                <div class="ticket-highlight">
+                    VIP Tickets to the Royal Edinburgh Military Tattoo
+                </div>
+
+                <div class="ticket-details">
+                    <div class="ticket-detail-row">
+                        <span class="ticket-label">Event:</span>
+                        <span class="ticket-value">The Royal Edinburgh Military Tattoo</span>
+                    </div>
+                    <div class="ticket-detail-row">
+                        <span class="ticket-label">75th Anniversary Tour</span>
+                        <span class="ticket-value">Australian Exclusive</span>
+                    </div>
+                    <div class="ticket-detail-row">
+                        <span class="ticket-label">Date:</span>
+                        <span class="ticket-value">Friday, 13 February 2026</span>
+                    </div>
+                    <div class="ticket-detail-row">
+                        <span class="ticket-label">Time:</span>
+                        <span class="ticket-value">5:30pm gates / 7:30pm show</span>
+                    </div>
+                    <div class="ticket-detail-row">
+                        <span class="ticket-label">Venue:</span>
+                        <span class="ticket-value">Suncorp Stadium, Milton QLD</span>
+                    </div>
+                    <div class="ticket-detail-row">
+                        <span class="ticket-label">Tickets:</span>
+                        <span class="ticket-value">VIP A-Reserve with Cocktail Lounge</span>
+                    </div>
+                </div>
+
+                <div class="event-link">
+                    <a href="https://www.edintattoobrisbane.com.au" target="_blank">
+                        Visit Official Website →
+                    </a>
+                </div>
+            </div>
+
+            <div class="completion-message">
+                Happy Birthday! 🎂<br>
+                Enjoy this incredible experience together!
+            </div>
+        </div>
+
+        <!-- ERROR VIEW -->
+        <div id="errorView" class="view error-view">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">Oops! Something went wrong</div>
+            <div class="error-message" id="errorMessage">
+                We encountered an error loading the game.
+            </div>
+            <button class="retry-button" onclick="location.reload()">
+                Retry
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * TRIVIA GAME CLIENT
+         * ==================
+         * Main game logic and state management for the client-side
+         * 
+         * Features:
+         * - Real-time state synchronization via polling
+         * - Multiple view states (question, waiting, disagreement, completion, error)
+         * - Comprehensive error handling with graceful degradation
+         * - Responsive UI updates
+         * - Answer submission and disagreement resolution
+         */
+
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+
+        const CONFIG = {
+            POLL_INTERVAL: 2000, // Poll server every 2 seconds
+            API_TIMEOUT: 10000, // 10 second timeout for API calls
+            MAX_RETRIES: 3, // Maximum retry attempts for failed requests
+            RETRY_DELAY: 1000 // Delay between retries
+        };
+
+        // ============================================
+        // GLOBAL STATE
+        // ============================================
+
+        let gameState = {
+            player: null,
+            otherPlayer: null,
+            selectedAnswer: null,
+            selectedDisagreementAnswer: null,
+            pollInterval: null,
+            retryCount: 0
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        /**
+         * Initialize the game on page load
+         * Extracts player from URL and starts the game
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[INIT] Initializing trivia game...');
+            
+            // Extract player from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const player = urlParams.get('player');
+            
+            if (!player || (player !== 'lachlan' && player !== 'leigh')) {
+                console.error('[INIT] Invalid or missing player parameter');
+                showError('Invalid player. Please use the correct link.');
+                return;
+            }
+            
+            gameState.player = player;
+            gameState.otherPlayer = player === 'lachlan' ? 'leigh' : 'lachlan';
+            
+            console.log(`[INIT] Player: ${player}`);
+            
+            // Update player name display
+            const displayName = player.charAt(0).toUpperCase() + player.slice(1);
+            document.getElementById('playerNameDisplay').textContent = displayName;
+            document.getElementById('otherPlayerName').textContent = 
+                gameState.otherPlayer.charAt(0).toUpperCase() + gameState.otherPlayer.slice(1);
+            
+            // Set player avatar
+            const avatarImg = document.getElementById('playerAvatar');
+            if (player === 'lachlan') {
+                avatarImg.src = 'avatar-lachlan.jpg';
+                avatarImg.alt = 'Lachlan Avatar';
+            } else {
+                avatarImg.src = 'avatar-leigh.jpg';
+                avatarImg.alt = 'Leigh Avatar';
+            }
+            
+            // Fallback to placeholder if main avatar fails to load
+            avatarImg.onerror = function() {
+                console.log('[AVATAR] Main avatar not found, using placeholder');
+                if (player === 'lachlan') {
+                    this.src = 'avatar-lachlan-placeholder.svg';
+                } else {
+                    this.src = 'avatar-leigh-placeholder.svg';
+                }
+            };
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Load initial game state
+            loadGameState();
+            
+            // Start polling for updates
+            startPolling();
+            
+            console.log('[INIT] Initialization complete');
+        });
+
+        /**
+         * Set up all event listeners for interactive elements
+         */
+        function setupEventListeners() {
+            console.log('[EVENTS] Setting up event listeners');
+            
+            // Hint button
+            document.getElementById('hintButton').addEventListener('click', () => {
+                const hintText = document.getElementById('hintText');
+                hintText.classList.toggle('show');
+            });
+            
+            // Submit answer button
+            document.getElementById('submitButton').addEventListener('click', submitAnswer);
+            
+            // Resolve disagreement button
+            document.getElementById('resolveButton').addEventListener('click', resolveDisagreement);
+        }
+
+        // ============================================
+        // API COMMUNICATION
+        // ============================================
+
+        /**
+         * Make an API request with timeout and retry logic
+         * @param {string} url - API endpoint
+         * @param {Object} options - Fetch options
+         * @param {number} retryCount - Current retry attempt
+         * @returns {Promise<Object>} Response data
+         */
+        async function apiRequest(url, options = {}, retryCount = 0) {
+            try {
+                console.log(`[API] Request to ${url}`);
+                
+                // Create timeout promise
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Request timeout')), CONFIG.API_TIMEOUT);
+                });
+                
+                // Race between fetch and timeout
+                const response = await Promise.race([
+                    fetch(url, options),
+                    timeoutPromise
+                ]);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(`[API] Response from ${url}:`, data);
+                
+                // Reset retry count on success
+                gameState.retryCount = 0;
+                
+                return data;
+            } catch (error) {
+                console.error(`[API] Error on ${url}:`, error.message);
+                
+                // Retry logic for failed requests
+                if (retryCount < CONFIG.MAX_RETRIES) {
+                    console.log(`[API] Retrying... (${retryCount + 1}/${CONFIG.MAX_RETRIES})`);
+                    await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY));
+                    return apiRequest(url, options, retryCount + 1);
+                }
+                
+                throw error;
+            }
+        }
+
+        /**
+         * Load current game state from server
+         */
+        async function loadGameState() {
+            try {
+                console.log('[STATE] Loading game state...');
+                
+                const data = await apiRequest(
+                    `/api/state?player=${gameState.player}`
+                );
+                
+                updateUI(data);
+            } catch (error) {
+                console.error('[STATE] Failed to load game state:', error);
+                showError('Failed to connect to game server. Please check your connection.');
+            }
+        }
+
+        /**
+         * Start polling for game state updates
+         */
+        function startPolling() {
+            console.log('[POLL] Starting state polling');
+            
+            // Clear any existing poll interval
+            if (gameState.pollInterval) {
+                clearInterval(gameState.pollInterval);
+            }
+            
+            // Set up new polling interval
+            gameState.pollInterval = setInterval(async () => {
+                try {
+                    const data = await apiRequest(
+                        `/api/state?player=${gameState.player}`
+                    );
+                    updateUI(data);
+                } catch (error) {
+                    console.error('[POLL] Polling error:', error);
+                    // Don't show error UI for polling failures, just log them
+                    // The UI will remain in its current state
+                }
+            }, CONFIG.POLL_INTERVAL);
+        }
+
+        /**
+         * Stop polling (e.g., when game is complete)
+         */
+        function stopPolling() {
+            console.log('[POLL] Stopping state polling');
+            if (gameState.pollInterval) {
+                clearInterval(gameState.pollInterval);
+                gameState.pollInterval = null;
+            }
+        }
+
+        // ============================================
+        // UI MANAGEMENT
+        // ============================================
+
+        /**
+         * Update UI based on current game state
+         * @param {Object} data - Game state data from server
+         */
+        function updateUI(data) {
+            console.log('[UI] Updating UI with state:', data);
+            
+            // Update progress
+            updateProgress(data.currentQuestion, data.totalQuestions);
+            
+            // Determine which view to show
+            if (data.completed) {
+                showCompletionView();
+                stopPolling();
+            } else if (data.inDisagreement) {
+                showDisagreementView(data);
+            } else if (data.playerAnswered && !data.otherPlayerAnswered) {
+                showWaitingView();
+            } else {
+                showQuestionView(data);
+            }
+        }
+
+        /**
+         * Update progress bar and question counter
+         */
+        function updateProgress(current, total) {
+            const percentage = (current / total) * 100;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('currentQuestionNum').textContent = current + 1;
+            document.getElementById('totalQuestions').textContent = total;
+        }
+
+        /**
+         * Show a specific view and hide all others
+         * @param {string} viewId - ID of view to show
+         */
+        function showView(viewId) {
+            console.log(`[UI] Showing view: ${viewId}`);
+            
+            // Hide all views
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+            
+            // Show requested view
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        /**
+         * Show question view with current question
+         * @param {Object} data - Game state data
+         */
+        function showQuestionView(data) {
+            showView('questionView');
+            
+            if (!data.question) {
+                console.error('[UI] No question data available');
+                return;
+            }
+            
+            // Update question text
+            document.getElementById('questionText').textContent = data.question.text;
+            document.getElementById('hintText').textContent = data.question.hint;
+            
+            // Hide hint by default
+            document.getElementById('hintText').classList.remove('show');
+            
+            // Render choices
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            
+            data.question.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = choice;
+                button.onclick = () => selectAnswer(choice);
+                
+                // Restore previous selection if exists
+                if (gameState.selectedAnswer === choice) {
+                    button.classList.add('selected');
+                }
+                
+                choicesContainer.appendChild(button);
+            });
+            
+            // Update submit button state
+            document.getElementById('submitButton').disabled = !gameState.selectedAnswer;
+        }
+
+        /**
+         * Show waiting view while other player answers
+         */
+        function showWaitingView() {
+            showView('waitingView');
+        }
+
+        /**
+         * Show disagreement resolution view
+         * @param {Object} data - Game state data
+         */
+        function showDisagreementView(data) {
+            showView('disagreementView');
+            
+            if (!data.question || !data.answers) {
+                console.error('[UI] Missing data for disagreement view');
+                return;
+            }
+            
+            // Update question text
+            document.getElementById('disagreementQuestionText').textContent = data.question.text;
+            
+            // Show both answers
+            document.getElementById('lachlanAnswer').textContent = data.answers.lachlan;
+            document.getElementById('leighAnswer').textContent = data.answers.leigh;
+            
+            // Render choices for resolution
+            const choicesContainer = document.getElementById('disagreementChoicesContainer');
+            choicesContainer.innerHTML = '';
+            
+            data.question.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = choice;
+                button.onclick = () => selectDisagreementAnswer(choice);
+                
+                // Restore previous selection if exists
+                if (gameState.selectedDisagreementAnswer === choice) {
+                    button.classList.add('selected');
+                }
+                
+                choicesContainer.appendChild(button);
+            });
+            
+            // Update resolve button state
+            document.getElementById('resolveButton').disabled = !gameState.selectedDisagreementAnswer;
+        }
+
+        /**
+         * Show completion view with ticket reveal
+         */
+        function showCompletionView() {
+            showView('completionView');
+        }
+
+        /**
+         * Show error view with message
+         * @param {string} message - Error message to display
+         */
+        function showError(message) {
+            console.error('[UI] Showing error:', message);
+            document.getElementById('errorMessage').textContent = message;
+            showView('errorView');
+            stopPolling();
+        }
+
+        // ============================================
+        // ANSWER HANDLING
+        // ============================================
+
+        /**
+         * Handle answer selection in question view
+         * @param {string} answer - Selected answer
+         */
+        function selectAnswer(answer) {
+            console.log(`[ANSWER] Selected: ${answer}`);
+            
+            gameState.selectedAnswer = answer;
+            
+            // Update UI to show selection
+            document.querySelectorAll('#choicesContainer .choice-button').forEach(button => {
+                button.classList.remove('selected');
+                if (button.textContent === answer) {
+                    button.classList.add('selected');
+                }
+            });
+            
+            // Enable submit button
+            document.getElementById('submitButton').disabled = false;
+        }
+
+        /**
+         * Submit answer to server
+         */
+        async function submitAnswer() {
+            if (!gameState.selectedAnswer) {
+                console.warn('[ANSWER] No answer selected');
+                return;
+            }
+            
+            console.log(`[ANSWER] Submitting: ${gameState.selectedAnswer}`);
+            
+            const submitButton = document.getElementById('submitButton');
+            const originalText = submitButton.textContent;
+            
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="loading-spinner"></span> Submitting...';
+            
+            try {
+                await apiRequest('/api/answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        player: gameState.player,
+                        answer: gameState.selectedAnswer
+                    })
+                });
+                
+                console.log('[ANSWER] Submitted successfully');
+                
+                // Clear selection
+                gameState.selectedAnswer = null;
+                
+                // Reload state to get updated view
+                await loadGameState();
+            } catch (error) {
+                console.error('[ANSWER] Submission failed:', error);
+                alert('Failed to submit answer. Please try again.');
+                
+                // Restore button
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        }
+
+        /**
+         * Handle answer selection in disagreement view
+         * @param {string} answer - Selected agreed answer
+         */
+        function selectDisagreementAnswer(answer) {
+            console.log(`[RESOLVE] Selected agreed answer: ${answer}`);
+            
+            gameState.selectedDisagreementAnswer = answer;
+            
+            // Update UI to show selection
+            document.querySelectorAll('#disagreementChoicesContainer .choice-button').forEach(button => {
+                button.classList.remove('selected');
+                if (button.textContent === answer) {
+                    button.classList.add('selected');
+                }
+            });
+            
+            // Enable resolve button
+            document.getElementById('resolveButton').disabled = false;
+        }
+
+        /**
+         * Submit agreed answer to resolve disagreement
+         */
+        async function resolveDisagreement() {
+            if (!gameState.selectedDisagreementAnswer) {
+                console.warn('[RESOLVE] No agreed answer selected');
+                return;
+            }
+            
+            console.log(`[RESOLVE] Submitting agreed answer: ${gameState.selectedDisagreementAnswer}`);
+            
+            const resolveButton = document.getElementById('resolveButton');
+            const originalText = resolveButton.textContent;
+            
+            // Show loading state
+            resolveButton.disabled = true;
+            resolveButton.innerHTML = '<span class="loading-spinner"></span> Submitting...';
+            
+            try {
+                await apiRequest('/api/resolve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agreedAnswer: gameState.selectedDisagreementAnswer
+                    })
+                });
+                
+                console.log('[RESOLVE] Resolved successfully');
+                
+                // Clear selection
+                gameState.selectedDisagreementAnswer = null;
+                
+                // Reload state to get updated view
+                await loadGameState();
+            } catch (error) {
+                console.error('[RESOLVE] Resolution failed:', error);
+                alert('Failed to submit agreed answer. Please try again.');
+                
+                // Restore button
+                resolveButton.disabled = false;
+                resolveButton.textContent = originalText;
+            }
+        }
+
+        /**
+         * Log for debugging purposes
+         * Can be expanded to include external logging if needed
+         */
+        console.log('[INIT] Client script loaded and ready');
+    </script>
+</body>
+</html>
