@@ -46,6 +46,12 @@ COPY --chown=nodejs:nodejs questions.json ./
 COPY --chown=nodejs:nodejs package*.json ./
 COPY --chown=nodejs:nodejs public ./public/
 
+# Verify critical files exist
+RUN ls -la /app/questions.json && \
+    echo "✓ questions.json copied successfully" && \
+    ls -la /app/server.js && \
+    echo "✓ server.js copied successfully"
+
 # Create directories for runtime files with proper permissions
 # These need to be writable by the nodejs user
 RUN mkdir -p logs && \
