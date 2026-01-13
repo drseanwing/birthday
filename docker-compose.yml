@@ -1,7 +1,6 @@
 # Royal Edinburgh Tattoo Trivia - Docker Compose Configuration
 # =============================================================
-# ROOTLESS DOCKER COMPATIBLE VERSION
-# Uses named volumes to avoid permission issues
+# Production-ready configuration with persistence and logging
 #
 # Usage:
 #   docker-compose up -d          # Start in background
@@ -35,19 +34,15 @@ services:
       - PORT=3000
       - TZ=Australia/Brisbane  # Set timezone for timestamps
     
-    # Volume mounts for persistence
-    # USING NAMED VOLUMES - Rootless Docker Compatible!
-    volumes:
-      # Persist game state and logs using named volumes
-      # Named volumes are managed by Docker and avoid permission issues
-      - game-data:/app
-      - game-logs:/app/logs
-      
-      # Note: To access files from named volumes:
-      # - View logs: docker-compose logs -f
-      # - Copy state out: docker cp tattoo-trivia-game:/app/game-state.json ./
-      # - Copy state in: docker cp ./game-state.json tattoo-trivia-game:/app/
-      # - Shell access: docker-compose exec trivia-game sh
+    # Volume configuration for rootless Docker compatibility
+    # For a one-time event, we keep data inside the container
+    # This avoids permission issues with rootless Docker
+    # 
+    # To backup: docker cp tattoo-trivia-game:/app/game-state.json ./backup.json
+    # To reset: docker-compose down && docker-compose up -d
+    # 
+    # If you need persistent storage, see docker-compose-persistent.yml
+
     
     # Restart policy
     # always: restart container automatically if it crashes or server reboots
@@ -93,56 +88,11 @@ networks:
     driver: bridge
     name: tattoo-trivia-network
 
-# Named volume definitions
-# These persist data independently of containers
-# Managed by Docker, work perfectly with rootless Docker
-volumes:
-  game-data:
-    name: tattoo-trivia-data
-    driver: local
-  game-logs:
-    name: tattoo-trivia-logs
-    driver: local
+# Volume definitions (optional - for named volumes)
+# volumes:
+#   game-data:
+#     driver: local
 
-# ============================================
-# ROOTLESS DOCKER NOTES
-# ============================================
-#
-# Named volumes avoid permission issues because:
-# - Docker manages the volume permissions
-# - No host filesystem mapping required
-# - Works with UID/GID namespace remapping
-#
-# To access data in named volumes:
-#
-# 1. View logs in real-time:
-#    docker-compose logs -f
-#
-# 2. Copy game state out:
-#    docker cp tattoo-trivia-game:/app/game-state.json ./game-state-backup.json
-#
-# 3. Copy game state in:
-#    docker cp ./game-state-backup.json tattoo-trivia-game:/app/game-state.json
-#    docker-compose restart
-#
-# 4. View game state:
-#    docker-compose exec trivia-game cat /app/game-state.json
-#
-# 5. Reset game:
-#    docker-compose exec trivia-game rm -f /app/game-state.json
-#    docker-compose restart
-#
-# 6. Access container shell:
-#    docker-compose exec trivia-game sh
-#
-# 7. View application logs:
-#    docker-compose exec trivia-game cat /app/logs/game.log
-#    docker-compose exec trivia-game tail -f /app/logs/game.log
-#
-# 8. Inspect volume location:
-#    docker volume inspect tattoo-trivia-data
-#    docker volume inspect tattoo-trivia-logs
-#
 # ============================================
 # QUICK REFERENCE COMMANDS
 # ============================================
@@ -168,9 +118,6 @@ volumes:
 # Stop and remove containers:
 #   docker-compose down
 #
-# Stop and remove containers + volumes:
-#   docker-compose down -v
-#
 # Rebuild and restart:
 #   docker-compose up -d --build
 #
@@ -180,26 +127,15 @@ volumes:
 # View resource usage:
 #   docker stats tattoo-trivia-game
 #
-# Backup game state:
-#   docker cp tattoo-trivia-game:/app/game-state.json ./backup-$(date +%Y%m%d).json
-#
-# Restore game state:
-#   docker cp ./backup.json tattoo-trivia-game:/app/game-state.json
-#   docker-compose restart
-#
 # ============================================
 # ACCESSING THE GAME
 # ============================================
 #
 # After starting, access at:
-#   http://YOUR_SERVER_IP:13188
+#   http://YOUR_SERVER_IP:130188
 #
 # Player URLs:
-#   http://YOUR_SERVER_IP:13188/game?player=lachlan
-#   http://YOUR_SERVER_IP:13188/game?player=leigh
-#
-# With nginx/SSL:
-#   https://130188.resuseducation.com/game?player=lachlan
-#   https://130188.resuseducation.com/game?player=leigh
+#   http://YOUR_SERVER_IP:130188/game?player=lachlan
+#   http://YOUR_SERVER_IP:130188/game?player=leigh
 #
 # ============================================
