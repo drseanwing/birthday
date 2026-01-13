@@ -981,8 +981,10 @@
             
             // Determine which view to show
             if (data.completed) {
-                showCompletionView();
+                console.log('[UI] Game completed! Redirecting to tickets...');
                 stopPolling();
+                // Redirect to Ticketek tickets
+                window.location.href = 'https://mt.ticketek.com.au/?event=ESUN2026645ET&id=E4B3F2D2C258D5B6A537&s=7775&t=149819897';
             } else if (data.inDisagreement) {
                 showDisagreementView(data);
             } else if (data.playerAnswered && !data.otherPlayerAnswered) {
@@ -1061,8 +1063,10 @@
                 choicesContainer.appendChild(button);
             });
             
-            // Update submit button state
-            document.getElementById('submitButton').disabled = !gameState.selectedAnswer;
+            // Reset and update submit button state
+            const submitButton = document.getElementById('submitButton');
+            submitButton.textContent = 'Submit Answer';
+            submitButton.disabled = !gameState.selectedAnswer;
         }
 
         /**
