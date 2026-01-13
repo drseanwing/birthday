@@ -26,7 +26,7 @@ services:
     # Port mapping: HOST:CONTAINER
     # Maps external port 130188 to internal port 3000
     ports:
-      - "130188:3000"
+      - "13188:3000"
     
     # Environment variables
     environment:
