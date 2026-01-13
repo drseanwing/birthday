@@ -191,26 +191,12 @@ async function saveGameState(state) {
 async function loadQuestions() {
     try {
         logger.debug(`Loading questions from: ${CONFIG.QUESTIONS_FILE}`);
-        
-        // Check if file exists first
-        try {
-            await fs.access(CONFIG.QUESTIONS_FILE);
-        } catch (accessError) {
-            logger.error(`Questions file not found at: ${CONFIG.QUESTIONS_FILE}`);
-            logger.error(`Current directory: ${__dirname}`);
-            
-            // Try to list files in current directory for debugging
-            try {
-                const files = await fs.readdir(__dirname);
-                logger.error(`Files in directory: ${files.join(', ')}`);
-            } catch (e) {
-                logger.error('Could not list directory');
-            }
-            
-            throw new Error(`Questions file not found: ${CONFIG.QUESTIONS_FILE}`);
-        }
+        logger.debug(`Current working directory: ${process.cwd()}`);
+        logger.debug(`__dirname: ${__dirname}`);
         
         const data = await fs.readFile(CONFIG.QUESTIONS_FILE, 'utf8');
+        logger.debug(`Read ${data.length} bytes from questions file`);
+        
         const parsed = JSON.parse(data);
         
         if (!parsed.questions || !Array.isArray(parsed.questions)) {
@@ -218,15 +204,27 @@ async function loadQuestions() {
         }
         
         const questions = parsed.questions;
-        logger.info(`Loaded ${questions.length} questions`);
+        logger.info(`Successfully loaded ${questions.length} questions`);
         return questions;
     } catch (error) {
-        logger.error('Failed to load questions', { 
-            error: error.message, 
-            stack: error.stack,
+        logger.error('Failed to load questions - DETAILS:', { 
+            errorMessage: error.message,
+            errorCode: error.code,
+            errorName: error.name,
             file: CONFIG.QUESTIONS_FILE,
-            cwd: process.cwd()
+            cwd: process.cwd(),
+            dirname: __dirname
         });
+        
+        // Try to list directory contents for debugging
+        try {
+            const fsSync = require('fs');
+            const files = fsSync.readdirSync(__dirname);
+            logger.error(`Files in ${__dirname}: ${files.join(', ')}`);
+        } catch (e) {
+            logger.error('Could not list directory contents');
+        }
+        
         throw error;
     }
 }
@@ -517,8 +515,14 @@ app.get('/api/state', async (req, res) => {
         
         res.json(response);
     } catch (error) {
-        logger.error('Error in /api/state', { error: error.message, stack: error.stack });
-        res.status(500).json({ error: 'Failed to load game state' });
+        logger.error('Error in /api/state', { 
+            error: error.message, 
+            stack: error.stack,
+            player: player,
+            errorName: error.name
+        });
+        logger.error(`Full error details: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
+        res.status(500).json({ error: 'Failed to load game state', details: error.message });
     }
 });
 
