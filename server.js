@@ -281,22 +281,27 @@ function processAnswer(state, player, answer, questions) {
     
     // Update player's answer
     state.answers[player] = answer;
-    logger.debug(`Updated ${player}'s answer`);
+    logger.info(`✓ Recorded ${player}'s answer: "${answer}"`);
+    logger.debug(`Current answers - Lachlan: "${state.answers.lachlan}", Leigh: "${state.answers.leigh}"`);
     
     // Check if both players have answered
     if (state.answers[otherPlayer] !== null) {
-        logger.info('Both players have answered');
+        logger.info('Both players have answered, checking for agreement...');
         
         const lachlanAnswer = state.answers.lachlan;
         const leighAnswer = state.answers.leigh;
         
+        logger.info(`Lachlan answered: "${lachlanAnswer}"`);
+        logger.info(`Leigh answered: "${leighAnswer}"`);
+        
         // Check for agreement
         if (lachlanAnswer === leighAnswer) {
-            logger.info(`Players agree on answer: "${lachlanAnswer}"`);
+            logger.info(`✓ Players AGREE on answer: "${lachlanAnswer}"`);
             
             // Check if answer is correct
             const isCorrect = lachlanAnswer === currentQ.correct_answer;
-            logger.info(`Answer is ${isCorrect ? 'CORRECT' : 'INCORRECT'}`);
+            logger.info(`Answer is ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
+            logger.info(`Correct answer: "${currentQ.correct_answer}"`);
             
             // Record in history
             state.history.push({
@@ -308,30 +313,42 @@ function processAnswer(state, player, answer, questions) {
                 timestamp: new Date().toISOString()
             });
             
+            logger.debug(`Added to history. History length: ${state.history.length}`);
+            
             if (isCorrect) {
                 // Move to next question
+                const oldQuestion = state.currentQuestion;
                 state.currentQuestion++;
                 state.answers = { lachlan: null, leigh: null };
                 state.inDisagreement = false;
                 
+                logger.info(`✓ Moving from question ${oldQuestion} to question ${state.currentQuestion}`);
+                
                 // Check if game is complete
                 if (state.currentQuestion >= questions.length) {
                     state.completed = true;
-                    logger.info('GAME COMPLETED! All questions answered correctly.');
+                    logger.info('🎉 GAME COMPLETED! All questions answered correctly.');
+                } else {
+                    logger.info(`Next question: "${questions[state.currentQuestion].question}"`);
                 }
             } else {
                 // They agreed but were wrong - stay on question
-                logger.info('Players agreed but answer was incorrect, resetting answers');
+                logger.info('✗ Players agreed but answer was incorrect, resetting for retry');
+                logger.info(`Staying on question ${state.currentQuestion}: "${currentQ.question}"`);
                 state.answers = { lachlan: null, leigh: null };
             }
         } else {
             // Disagreement detected
-            logger.warn(`DISAGREEMENT: Lachlan said "${lachlanAnswer}", Leigh said "${leighAnswer}"`);
+            logger.warn(`⚠ DISAGREEMENT DETECTED!`);
+            logger.warn(`  Lachlan said: "${lachlanAnswer}"`);
+            logger.warn(`  Leigh said: "${leighAnswer}"`);
+            logger.warn(`  Correct answer: "${currentQ.correct_answer}"`);
             state.inDisagreement = true;
             state.disagreementResolved = false;
+            logger.info('Waiting for twins to reach consensus...');
         }
     } else {
-        logger.debug(`Waiting for ${otherPlayer} to answer`);
+        logger.info(`Waiting for ${otherPlayer} to answer...`);
     }
     
     return state;
@@ -347,11 +364,13 @@ function processAnswer(state, player, answer, questions) {
  */
 function processDisagreementResolution(state, agreedAnswer, questions) {
     logger.info(`Processing disagreement resolution: "${agreedAnswer}"`);
+    logger.debug(`Initial disagreement - Lachlan: "${state.answers.lachlan}", Leigh: "${state.answers.leigh}"`);
     
     const currentQ = questions[state.currentQuestion];
     const isCorrect = agreedAnswer === currentQ.correct_answer;
     
-    logger.info(`Agreed answer is ${isCorrect ? 'CORRECT' : 'INCORRECT'}`);
+    logger.info(`Agreed answer "${agreedAnswer}" is ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
+    logger.info(`Correct answer was: "${currentQ.correct_answer}"`);
     
     // Record resolution in history
     state.history.push({
@@ -368,21 +387,29 @@ function processDisagreementResolution(state, agreedAnswer, questions) {
         timestamp: new Date().toISOString()
     });
     
+    logger.debug(`Added resolution to history. History length: ${state.history.length}`);
+    
     if (isCorrect) {
         // Move to next question
+        const oldQuestion = state.currentQuestion;
         state.currentQuestion++;
         state.answers = { lachlan: null, leigh: null };
         state.inDisagreement = false;
         state.disagreementResolved = false;
         
+        logger.info(`✓ Moving from question ${oldQuestion} to question ${state.currentQuestion}`);
+        
         // Check if game is complete
         if (state.currentQuestion >= questions.length) {
             state.completed = true;
-            logger.info('GAME COMPLETED after disagreement resolution!');
+            logger.info('🎉 GAME COMPLETED after disagreement resolution!');
+        } else {
+            logger.info(`Next question: "${questions[state.currentQuestion].question}"`);
         }
     } else {
         // They agreed but were wrong - stay on question, reset disagreement
-        logger.info('Disagreement resolved but answer incorrect, resetting');
+        logger.info('✗ Disagreement resolved but answer incorrect, resetting for retry');
+        logger.info(`Staying on question ${state.currentQuestion}: "${currentQ.question}"`);
         state.answers = { lachlan: null, leigh: null };
         state.inDisagreement = false;
         state.disagreementResolved = false;
@@ -533,6 +560,8 @@ app.get('/api/state', async (req, res) => {
 app.post('/api/answer', async (req, res) => {
     const { player, answer } = req.body;
     
+    logger.info(`POST /api/answer - Player: ${player}, Answer: "${answer}"`);
+    
     if (!isValidPlayer(player)) {
         logger.warn(`Invalid player in /api/answer: ${player}`);
         return res.status(400).json({ error: 'Invalid player' });
@@ -547,6 +576,8 @@ app.post('/api/answer', async (req, res) => {
         let state = await loadGameState();
         const questions = await loadQuestions();
         
+        logger.debug(`Current state - Question: ${state.currentQuestion}, InDisagreement: ${state.inDisagreement}`);
+        
         // Validate question index
         if (state.currentQuestion >= questions.length) {
             logger.warn(`Attempt to answer beyond last question by ${player}`);
@@ -558,6 +589,7 @@ app.post('/api/answer', async (req, res) => {
         // Validate answer is one of the choices
         if (!isValidAnswer(answer, currentQ.choices)) {
             logger.warn(`Invalid answer choice from ${player}: ${answer}`);
+            logger.debug(`Valid choices: ${JSON.stringify(currentQ.choices)}`);
             return res.status(400).json({ error: 'Invalid answer choice' });
         }
         
@@ -571,7 +603,8 @@ app.post('/api/answer', async (req, res) => {
         state = processAnswer(state, player, answer, questions);
         await saveGameState(state);
         
-        logger.info(`Answer from ${player} processed successfully`);
+        logger.info(`✓ Answer from ${player} processed successfully: "${answer}"`);
+        logger.debug(`New state - InDisagreement: ${state.inDisagreement}, CurrentQuestion: ${state.currentQuestion}`);
         
         res.json({
             success: true,
@@ -591,6 +624,9 @@ app.post('/api/answer', async (req, res) => {
 app.post('/api/resolve', async (req, res) => {
     const { agreedAnswer } = req.body;
     
+    logger.info(`POST /api/resolve - Agreed Answer: "${agreedAnswer}"`);
+    logger.debug(`Request body: ${JSON.stringify(req.body)}`);
+    
     if (!agreedAnswer) {
         logger.warn('Missing agreed answer in /api/resolve');
         return res.status(400).json({ error: 'Agreed answer is required' });
@@ -600,24 +636,34 @@ app.post('/api/resolve', async (req, res) => {
         let state = await loadGameState();
         const questions = await loadQuestions();
         
+        logger.debug(`Current state before resolve - Question: ${state.currentQuestion}, InDisagreement: ${state.inDisagreement}`);
+        logger.debug(`Current answers - Lachlan: "${state.answers.lachlan}", Leigh: "${state.answers.leigh}"`);
+        
         if (!state.inDisagreement) {
             logger.warn('Attempt to resolve when not in disagreement');
             return res.status(400).json({ error: 'Not in disagreement state' });
         }
         
         const currentQ = questions[state.currentQuestion];
+        logger.debug(`Current question: "${currentQ.question}"`);
+        logger.debug(`Correct answer: "${currentQ.correct_answer}"`);
+        logger.debug(`Valid choices: ${JSON.stringify(currentQ.choices)}`);
         
         // Validate agreed answer is one of the choices
         if (!isValidAnswer(agreedAnswer, currentQ.choices)) {
-            logger.warn(`Invalid agreed answer: ${agreedAnswer}`);
+            logger.warn(`Invalid agreed answer: "${agreedAnswer}"`);
+            logger.debug(`Valid choices are: ${JSON.stringify(currentQ.choices)}`);
             return res.status(400).json({ error: 'Invalid answer choice' });
         }
+        
+        logger.info(`✓ Validation passed, processing resolution with answer: "${agreedAnswer}"`);
         
         // Process the resolution
         state = processDisagreementResolution(state, agreedAnswer, questions);
         await saveGameState(state);
         
-        logger.info('Disagreement resolved successfully');
+        logger.info('✓ Disagreement resolved successfully');
+        logger.debug(`New state - Question: ${state.currentQuestion}, InDisagreement: ${state.inDisagreement}, Completed: ${state.completed}`);
         
         res.json({
             success: true,
