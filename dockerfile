@@ -49,7 +49,8 @@ COPY --chown=nodejs:nodejs public ./public/
 # Create directories for runtime files with proper permissions
 # These need to be writable by the nodejs user
 RUN mkdir -p logs && \
-    chown -R nodejs:nodejs logs && \
+    chown -R nodejs:nodejs /app && \
+    chmod -R 755 /app && \
     echo "Created logs directory with proper permissions"
 
 # Switch to non-root user
