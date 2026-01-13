@@ -1,0 +1,148 @@
+# Royal Edinburgh Tattoo Trivia - Docker Compose Configuration
+# =============================================================
+# Production-ready configuration with persistence and logging
+#
+# Usage:
+#   docker-compose up -d          # Start in background
+#   docker-compose logs -f        # View logs
+#   docker-compose down           # Stop and remove
+#   docker-compose restart        # Restart service
+
+version: '3.8'
+
+services:
+  trivia-game:
+    # Service name - appears in logs and container name
+    container_name: tattoo-trivia-game
+    
+    # Build configuration
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    # Image name and tag
+    image: tattoo-trivia:latest
+    
+    # Port mapping: HOST:CONTAINER
+    # Maps external port 130188 to internal port 3000
+    ports:
+      - "130188:3000"
+    
+    # Environment variables
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - TZ=Australia/Brisbane  # Set timezone for timestamps
+    
+    # Volume mounts for persistence
+    # Allows data to survive container restarts
+    volumes:
+      # Persist game state across restarts
+      - ./game-state.json:/app/game-state.json
+      
+      # Persist logs outside container for easy access
+      - ./logs:/app/logs
+      
+      # Optional: Mount questions.json to allow updates without rebuild
+      # Uncomment if you want to modify questions without rebuilding image
+      # - ./questions.json:/app/questions.json:ro
+      
+      # Optional: Mount custom avatars if added later
+      # - ./public/avatar-lachlan.jpg:/app/public/avatar-lachlan.jpg:ro
+      # - ./public/avatar-leigh.jpg:/app/public/avatar-leigh.jpg:ro
+    
+    # Restart policy
+    # always: restart container automatically if it crashes or server reboots
+    restart: always
+    
+    # Resource limits (optional but recommended)
+    # Prevents container from consuming too many resources
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'      # Max 50% of one CPU core
+          memory: 256M     # Max 256MB RAM
+        reservations:
+          cpus: '0.1'      # Minimum guaranteed
+          memory: 64M      # Minimum guaranteed
+    
+    # Health check configuration
+    # Automatically restarts if health check fails
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    
+    # Logging configuration
+    # Limits log file size to prevent disk fill-up
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"      # Maximum 10MB per log file
+        max-file: "3"        # Keep 3 log files (30MB total)
+        labels: "trivia-game"
+    
+    # Network configuration (optional)
+    # Creates isolated network for the service
+    networks:
+      - trivia-network
+
+# Network definition
+networks:
+  trivia-network:
+    driver: bridge
+    name: tattoo-trivia-network
+
+# Volume definitions (optional - for named volumes)
+# volumes:
+#   game-data:
+#     driver: local
+
+# ============================================
+# QUICK REFERENCE COMMANDS
+# ============================================
+#
+# Start the service:
+#   docker-compose up -d
+#
+# View logs (live):
+#   docker-compose logs -f
+#
+# View logs (last 100 lines):
+#   docker-compose logs --tail=100
+#
+# Check status:
+#   docker-compose ps
+#
+# Restart service:
+#   docker-compose restart
+#
+# Stop service:
+#   docker-compose stop
+#
+# Stop and remove containers:
+#   docker-compose down
+#
+# Rebuild and restart:
+#   docker-compose up -d --build
+#
+# Access container shell:
+#   docker-compose exec trivia-game sh
+#
+# View resource usage:
+#   docker stats tattoo-trivia-game
+#
+# ============================================
+# ACCESSING THE GAME
+# ============================================
+#
+# After starting, access at:
+#   http://YOUR_SERVER_IP:130188
+#
+# Player URLs:
+#   http://YOUR_SERVER_IP:130188/game?player=lachlan
+#   http://YOUR_SERVER_IP:130188/game?player=leigh
+#
+# ============================================
