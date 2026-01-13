@@ -1034,8 +1034,14 @@
             document.getElementById('questionText').textContent = data.question.text;
             document.getElementById('hintText').textContent = data.question.hint;
             
-            // Hide hint by default
-            document.getElementById('hintText').classList.remove('show');
+            // Show hint if flag is set (after wrong consensus answer)
+            const hintElement = document.getElementById('hintText');
+            if (data.showHint) {
+                console.log('[UI] Auto-showing hint after wrong consensus');
+                hintElement.classList.add('show');
+            } else {
+                hintElement.classList.remove('show');
+            }
             
             // Render choices
             const choicesContainer = document.getElementById('choicesContainer');
@@ -1081,11 +1087,20 @@
             // Update question text
             document.getElementById('disagreementQuestionText').textContent = data.question.text;
             
-            // Show both answers
+            // Show both initial answers
             document.getElementById('lachlanAnswer').textContent = data.answers.lachlan;
             document.getElementById('leighAnswer').textContent = data.answers.leigh;
             
-            // Render choices for resolution
+            // Show status if player has submitted consensus
+            const resolveButton = document.getElementById('resolveButton');
+            if (data.playerConsensusAnswered && !data.otherPlayerConsensusAnswered) {
+                console.log('[UI] Player has submitted consensus, waiting for other player');
+                resolveButton.disabled = true;
+                resolveButton.textContent = 'Waiting for ' + gameState.otherPlayer + '...';
+                return; // Don't show choices if already submitted
+            }
+            
+            // Render choices for consensus resolution
             const choicesContainer = document.getElementById('disagreementChoicesContainer');
             choicesContainer.innerHTML = '';
             
@@ -1104,7 +1119,8 @@
             });
             
             // Update resolve button state
-            document.getElementById('resolveButton').disabled = !gameState.selectedDisagreementAnswer;
+            resolveButton.disabled = !gameState.selectedDisagreementAnswer;
+            resolveButton.textContent = 'Submit Agreed Answer';
         }
 
         /**
@@ -1221,11 +1237,11 @@
          */
         async function resolveDisagreement() {
             if (!gameState.selectedDisagreementAnswer) {
-                console.warn('[RESOLVE] No agreed answer selected');
+                console.warn('[CONSENSUS] No agreed answer selected');
                 return;
             }
             
-            console.log(`[RESOLVE] Submitting agreed answer: ${gameState.selectedDisagreementAnswer}`);
+            console.log(`[CONSENSUS] ${gameState.player} submitting consensus answer: ${gameState.selectedDisagreementAnswer}`);
             
             const resolveButton = document.getElementById('resolveButton');
             const originalText = resolveButton.textContent;
@@ -1235,15 +1251,20 @@
             resolveButton.innerHTML = '<span class="loading-spinner"></span> Submitting...';
             
             try {
-                await apiRequest('/api/resolve', {
+                const response = await apiRequest('/api/consensus', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        agreedAnswer: gameState.selectedDisagreementAnswer
+                        player: gameState.player,
+                        answer: gameState.selectedDisagreementAnswer
                     })
                 });
                 
-                console.log('[RESOLVE] Resolved successfully');
+                console.log('[CONSENSUS] Submitted successfully:', response);
+                
+                if (response.waitingForOther) {
+                    console.log('[CONSENSUS] Waiting for other player to submit their consensus answer');
+                }
                 
                 // Clear selection
                 gameState.selectedDisagreementAnswer = null;
@@ -1251,7 +1272,7 @@
                 // Reload state to get updated view
                 await loadGameState();
             } catch (error) {
-                console.error('[RESOLVE] Resolution failed:', error);
+                console.error('[CONSENSUS] Submission failed:', error);
                 alert('Failed to submit agreed answer. Please try again.');
                 
                 // Restore button
