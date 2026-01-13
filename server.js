@@ -133,8 +133,13 @@ function createInitialState() {
             lachlan: null,
             leigh: null
         },
+        consensusAnswers: {
+            lachlan: null,
+            leigh: null
+        },
         inDisagreement: false,
         disagreementResolved: false,
+        showHint: false,
         completed: false,
         history: [],
         createdAt: new Date().toISOString(),
@@ -156,6 +161,15 @@ async function loadGameState() {
         logger.debug('Loading game state from file');
         const data = await fs.readFile(CONFIG.STATE_FILE, 'utf8');
         const state = JSON.parse(data);
+        
+        // Backwards compatibility: add new fields if missing
+        if (!state.consensusAnswers) {
+            state.consensusAnswers = { lachlan: null, leigh: null };
+        }
+        if (state.showHint === undefined) {
+            state.showHint = false;
+        }
+        
         logger.debug(`Game state loaded: Question ${state.currentQuestion}, Completed: ${state.completed}`);
         return state;
     } catch (error) {
@@ -286,66 +300,59 @@ function processAnswer(state, player, answer, questions) {
     
     // Check if both players have answered
     if (state.answers[otherPlayer] !== null) {
-        logger.info('Both players have answered, checking for agreement...');
+        logger.info('Both players have answered, checking correctness...');
         
         const lachlanAnswer = state.answers.lachlan;
         const leighAnswer = state.answers.leigh;
         
         logger.info(`Lachlan answered: "${lachlanAnswer}"`);
         logger.info(`Leigh answered: "${leighAnswer}"`);
+        logger.info(`Correct answer: "${currentQ.correct_answer}"`);
         
-        // Check for agreement
-        if (lachlanAnswer === leighAnswer) {
-            logger.info(`✓ Players AGREE on answer: "${lachlanAnswer}"`);
-            
-            // Check if answer is correct
-            const isCorrect = lachlanAnswer === currentQ.correct_answer;
-            logger.info(`Answer is ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
-            logger.info(`Correct answer: "${currentQ.correct_answer}"`);
+        // Check if BOTH players are correct
+        const lachlanCorrect = lachlanAnswer === currentQ.correct_answer;
+        const leighCorrect = leighAnswer === currentQ.correct_answer;
+        
+        logger.info(`Lachlan is ${lachlanCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
+        logger.info(`Leigh is ${leighCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
+        
+        if (lachlanCorrect && leighCorrect) {
+            // Both correct - advance to next question
+            logger.info('✓ BOTH PLAYERS CORRECT - Advancing to next question');
             
             // Record in history
             state.history.push({
                 question: state.currentQuestion,
                 questionText: currentQ.question,
-                agreedAnswer: lachlanAnswer,
+                lachlanAnswer: lachlanAnswer,
+                leighAnswer: leighAnswer,
                 correctAnswer: currentQ.correct_answer,
-                wasCorrect: isCorrect,
+                bothCorrect: true,
                 timestamp: new Date().toISOString()
             });
             
-            logger.debug(`Added to history. History length: ${state.history.length}`);
+            const oldQuestion = state.currentQuestion;
+            state.currentQuestion++;
+            state.answers = { lachlan: null, leigh: null };
+            state.inDisagreement = false;
             
-            if (isCorrect) {
-                // Move to next question
-                const oldQuestion = state.currentQuestion;
-                state.currentQuestion++;
-                state.answers = { lachlan: null, leigh: null };
-                state.inDisagreement = false;
-                
-                logger.info(`✓ Moving from question ${oldQuestion} to question ${state.currentQuestion}`);
-                
-                // Check if game is complete
-                if (state.currentQuestion >= questions.length) {
-                    state.completed = true;
-                    logger.info('🎉 GAME COMPLETED! All questions answered correctly.');
-                } else {
-                    logger.info(`Next question: "${questions[state.currentQuestion].question}"`);
-                }
+            logger.info(`Moving from question ${oldQuestion} to question ${state.currentQuestion}`);
+            
+            // Check if game is complete
+            if (state.currentQuestion >= questions.length) {
+                state.completed = true;
+                logger.info('🎉 GAME COMPLETED! All questions answered correctly.');
             } else {
-                // They agreed but were wrong - stay on question
-                logger.info('✗ Players agreed but answer was incorrect, resetting for retry');
-                logger.info(`Staying on question ${state.currentQuestion}: "${currentQ.question}"`);
-                state.answers = { lachlan: null, leigh: null };
+                logger.info(`Next question: "${questions[state.currentQuestion].question}"`);
             }
         } else {
-            // Disagreement detected
-            logger.warn(`⚠ DISAGREEMENT DETECTED!`);
-            logger.warn(`  Lachlan said: "${lachlanAnswer}"`);
-            logger.warn(`  Leigh said: "${leighAnswer}"`);
-            logger.warn(`  Correct answer: "${currentQ.correct_answer}"`);
+            // Either player wrong - enter consensus mode
+            logger.warn('⚠ AT LEAST ONE PLAYER WRONG - Entering consensus mode');
             state.inDisagreement = true;
             state.disagreementResolved = false;
-            logger.info('Waiting for twins to reach consensus...');
+            
+            // Record initial answers for reference
+            logger.info('Waiting for twins to reach consensus on the correct answer...');
         }
     } else {
         logger.info(`Waiting for ${otherPlayer} to answer...`);
@@ -519,10 +526,13 @@ app.get('/api/state', async (req, res) => {
             currentQuestion: state.currentQuestion,
             totalQuestions: questions.length,
             inDisagreement: state.inDisagreement,
+            showHint: state.showHint || false,
             completed: state.completed,
             playerAnswered: state.answers[player] !== null,
             otherPlayerAnswered: state.answers[player === CONFIG.PLAYERS.LACHLAN ? CONFIG.PLAYERS.LEIGH : CONFIG.PLAYERS.LACHLAN] !== null,
-            playerAnswer: state.answers[player]
+            playerAnswer: state.answers[player],
+            playerConsensusAnswered: state.consensusAnswers && state.consensusAnswers[player] !== null,
+            otherPlayerConsensusAnswered: state.consensusAnswers && state.consensusAnswers[player === CONFIG.PLAYERS.LACHLAN ? CONFIG.PLAYERS.LEIGH : CONFIG.PLAYERS.LACHLAN] !== null
         };
         
         // Include question data if not completed
@@ -618,61 +628,153 @@ app.post('/api/answer', async (req, res) => {
 });
 
 /**
- * POST /api/resolve - Resolve disagreement
- * Processes agreed-upon answer after disagreement
+ * POST /api/consensus - Submit consensus answer
+ * Each player submits their agreed answer independently
  */
-app.post('/api/resolve', async (req, res) => {
-    const { agreedAnswer } = req.body;
+app.post('/api/consensus', async (req, res) => {
+    const { player, answer } = req.body;
     
-    logger.info(`POST /api/resolve - Agreed Answer: "${agreedAnswer}"`);
-    logger.debug(`Request body: ${JSON.stringify(req.body)}`);
+    logger.info(`POST /api/consensus - Player: ${player}, Answer: "${answer}"`);
     
-    if (!agreedAnswer) {
-        logger.warn('Missing agreed answer in /api/resolve');
-        return res.status(400).json({ error: 'Agreed answer is required' });
+    if (!isValidPlayer(player)) {
+        logger.warn(`Invalid player in /api/consensus: ${player}`);
+        return res.status(400).json({ error: 'Invalid player' });
+    }
+    
+    if (!answer) {
+        logger.warn(`Missing consensus answer from ${player}`);
+        return res.status(400).json({ error: 'Answer is required' });
     }
     
     try {
         let state = await loadGameState();
         const questions = await loadQuestions();
         
-        logger.debug(`Current state before resolve - Question: ${state.currentQuestion}, InDisagreement: ${state.inDisagreement}`);
-        logger.debug(`Current answers - Lachlan: "${state.answers.lachlan}", Leigh: "${state.answers.leigh}"`);
+        logger.debug(`Current state - Question: ${state.currentQuestion}, InDisagreement: ${state.inDisagreement}`);
+        logger.debug(`Consensus answers before - Lachlan: "${state.consensusAnswers.lachlan}", Leigh: "${state.consensusAnswers.leigh}"`);
         
         if (!state.inDisagreement) {
-            logger.warn('Attempt to resolve when not in disagreement');
-            return res.status(400).json({ error: 'Not in disagreement state' });
+            logger.warn('Attempt to submit consensus when not in disagreement mode');
+            return res.status(400).json({ error: 'Not in consensus mode' });
         }
         
         const currentQ = questions[state.currentQuestion];
-        logger.debug(`Current question: "${currentQ.question}"`);
-        logger.debug(`Correct answer: "${currentQ.correct_answer}"`);
-        logger.debug(`Valid choices: ${JSON.stringify(currentQ.choices)}`);
         
-        // Validate agreed answer is one of the choices
-        if (!isValidAnswer(agreedAnswer, currentQ.choices)) {
-            logger.warn(`Invalid agreed answer: "${agreedAnswer}"`);
-            logger.debug(`Valid choices are: ${JSON.stringify(currentQ.choices)}`);
+        // Validate answer is one of the choices
+        if (!isValidAnswer(answer, currentQ.choices)) {
+            logger.warn(`Invalid consensus answer from ${player}: "${answer}"`);
+            logger.debug(`Valid choices: ${JSON.stringify(currentQ.choices)}`);
             return res.status(400).json({ error: 'Invalid answer choice' });
         }
         
-        logger.info(`✓ Validation passed, processing resolution with answer: "${agreedAnswer}"`);
+        // Record this player's consensus answer
+        state.consensusAnswers[player] = answer;
+        logger.info(`✓ Recorded ${player}'s consensus answer: "${answer}"`);
         
-        // Process the resolution
-        state = processDisagreementResolution(state, agreedAnswer, questions);
+        const otherPlayer = player === CONFIG.PLAYERS.LACHLAN ? CONFIG.PLAYERS.LEIGH : CONFIG.PLAYERS.LACHLAN;
+        
+        // Check if both players have submitted consensus answers
+        if (state.consensusAnswers[otherPlayer] !== null) {
+            logger.info('Both players have submitted consensus answers, checking agreement...');
+            
+            const lachlanConsensus = state.consensusAnswers.lachlan;
+            const leighConsensus = state.consensusAnswers.leigh;
+            
+            logger.info(`Lachlan consensus: "${lachlanConsensus}"`);
+            logger.info(`Leigh consensus: "${leighConsensus}"`);
+            
+            if (lachlanConsensus === leighConsensus) {
+                // They agree on consensus answer
+                const consensusAnswer = lachlanConsensus;
+                const isCorrect = consensusAnswer === currentQ.correct_answer;
+                
+                logger.info(`✓ Consensus reached: "${consensusAnswer}"`);
+                logger.info(`Consensus answer is ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
+                logger.info(`Correct answer: "${currentQ.correct_answer}"`);
+                
+                // Record in history
+                state.history.push({
+                    question: state.currentQuestion,
+                    questionText: currentQ.question,
+                    initialAnswers: {
+                        lachlan: state.answers.lachlan,
+                        leigh: state.answers.leigh
+                    },
+                    consensusAnswer: consensusAnswer,
+                    correctAnswer: currentQ.correct_answer,
+                    wasCorrect: isCorrect,
+                    wasConsensus: true,
+                    timestamp: new Date().toISOString()
+                });
+                
+                if (isCorrect) {
+                    // Correct! Advance to next question
+                    const oldQuestion = state.currentQuestion;
+                    state.currentQuestion++;
+                    state.answers = { lachlan: null, leigh: null };
+                    state.consensusAnswers = { lachlan: null, leigh: null };
+                    state.inDisagreement = false;
+                    state.showHint = false;
+                    
+                    logger.info(`✓ Advancing from question ${oldQuestion} to question ${state.currentQuestion}`);
+                    
+                    // Check if game is complete
+                    if (state.currentQuestion >= questions.length) {
+                        state.completed = true;
+                        logger.info('🎉 GAME COMPLETED!');
+                    }
+                } else {
+                    // Wrong! Show hint and reset to original question
+                    logger.info('✗ Consensus answer WRONG - Showing hint and resetting to original question');
+                    state.answers = { lachlan: null, leigh: null };
+                    state.consensusAnswers = { lachlan: null, leigh: null };
+                    state.inDisagreement = false;
+                    state.showHint = true;
+                    logger.info(`Hint will be shown: "${currentQ.hint}"`);
+                }
+            } else {
+                // Still disagreeing! Reset consensus answers and stay in consensus mode
+                logger.warn('⚠ Still disagreeing on consensus!');
+                logger.warn(`  Lachlan says: "${lachlanConsensus}"`);
+                logger.warn(`  Leigh says: "${leighConsensus}"`);
+                logger.info('Resetting consensus answers, staying in consensus mode');
+                state.consensusAnswers = { lachlan: null, leigh: null };
+                // Keep inDisagreement = true
+            }
+        } else {
+            logger.info(`Waiting for ${otherPlayer} to submit consensus answer...`);
+        }
+        
         await saveGameState(state);
-        
-        logger.info('✓ Disagreement resolved successfully');
-        logger.debug(`New state - Question: ${state.currentQuestion}, InDisagreement: ${state.inDisagreement}, Completed: ${state.completed}`);
+        logger.info('✓ Consensus answer processed successfully');
         
         res.json({
             success: true,
-            message: 'Disagreement resolved'
+            message: 'Consensus answer submitted',
+            waitingForOther: state.consensusAnswers[otherPlayer] === null && state.inDisagreement
         });
     } catch (error) {
-        logger.error('Error in /api/resolve', { error: error.message, stack: error.stack });
-        res.status(500).json({ error: 'Failed to resolve disagreement' });
+        logger.error('Error in /api/consensus', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to process consensus answer' });
     }
+});
+
+/**
+ * POST /api/resolve - Legacy endpoint, redirects to /api/consensus
+ * Kept for backwards compatibility
+ */
+app.post('/api/resolve', async (req, res) => {
+    logger.warn('Using legacy /api/resolve endpoint, should use /api/consensus instead');
+    
+    // If old format (single agreedAnswer), convert to new format
+    if (req.body.agreedAnswer && !req.body.player) {
+        logger.error('Legacy /api/resolve called without player - cannot process');
+        return res.status(400).json({ error: 'Player parameter required. Use /api/consensus endpoint.' });
+    }
+    
+    // Forward to consensus endpoint
+    req.url = '/api/consensus';
+    return app._router.handle(req, res);
 });
 
 /**
