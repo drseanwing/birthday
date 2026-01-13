@@ -16,7 +16,7 @@ COPY package*.json ./
 
 # Install dependencies with verbose logging
 RUN echo "Installing dependencies..." && \
-    npm ci --only=production --verbose && \
+    npm install --only=production --verbose && \
     echo "Dependencies installed successfully"
 
 # Stage 2: Production image
