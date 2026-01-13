@@ -1,43 +1,7 @@
 {
   "questions": [
     {
-      "question": "The term 'military tattoo' originates from a phrase in which language and what does it mean?",
-      "choices": [
-        "French – meaning 'prepare for battle'",
-        "Dutch – meaning 'turn off the taps'",
-        "German – meaning 'march together'",
-        "Latin – meaning 'sound the drums'"
-      ],
-      "correct_answer": "Dutch – meaning 'turn off the taps'",
-      "hint": "It comes from a 17th-century phrase telling innkeepers to stop serving beer to soldiers.",
-      "reference": "https://en.wikipedia.org/wiki/Royal_Edinburgh_Military_Tattoo#Etymology"
-    },
-    {
-      "question": "Against which iconic backdrop is the annual Royal Edinburgh Military Tattoo performed?",
-      "choices": [
-        "Buckingham Palace",
-        "Edinburgh Castle",
-        "Sydney Opera House",
-        "Tower of London"
-      ],
-      "correct_answer": "Edinburgh Castle",
-      "hint": "It's a historic fortress in Scotland's capital city.",
-      "reference": "https://www.edinburghfestivalcity.com/inspiration/5-10-facts-about-the-royal-edinburgh-military-tattoo"
-    },
-    {
-      "question": "The world's largest ever Royal Edinburgh Military Tattoo took place in October 2019 at which venue?",
-      "choices": [
-        "ANZ Stadium in Sydney",
-        "Edinburgh Castle Esplanade",
-        "Melbourne Cricket Ground",
-        "London Wembley Stadium"
-      ],
-      "correct_answer": "ANZ Stadium in Sydney",
-      "hint": "It was held in a large Olympic stadium in Australia.",
-      "reference": "https://en.wikipedia.org/wiki/Royal_Edinburgh_Military_Tattoo"
-    },
-    {
-      "question": "Which traditional Scottish instrument, known for its droning sound, is iconic in military tattoo performances?",
+      "question": "Which traditional Scottish instrument, known for its droning sound, is iconic in massed band performances?",
       "choices": [
         "Bagpipes",
         "Violin",
@@ -45,7 +9,7 @@
         "Harp"
       ],
       "correct_answer": "Bagpipes",
-      "hint": "Massed ranks of this wind instrument are a famous sight and sound at the Tattoo.",
+      "hint": "Massed ranks of this wind instrument are a famous sight and sound at military parades.",
       "reference": "https://www.abc.net.au/news/2025-05-11/royal-edinburgh-military-tattoo-exclusive-brisbane-celebration/105278048"
     },
     {
@@ -359,6 +323,18 @@
       "correct_answer": "Emu",
       "hint": "This large flightless bird, native to Australia, was chosen because it cannot easily walk backward.",
       "reference": "https://en.wikipedia.org/wiki/Coat_of_arms_of_Australia"
+    },
+        {
+      "question": "The term 'military tattoo' originates from a phrase in which language and what does it mean?",
+      "choices": [
+        "French – meaning 'prepare for battle'",
+        "Dutch – meaning 'turn off the taps'",
+        "German – meaning 'march together'",
+        "Latin – meaning 'sound the drums'"
+      ],
+      "correct_answer": "Dutch – meaning 'turn off the taps'",
+      "hint": "It comes from a 17th-century phrase telling innkeepers to stop serving beer to soldiers.",
+      "reference": "https://en.wikipedia.org/wiki/Royal_Edinburgh_Military_Tattoo#Etymology"
     }
   ]
 }
