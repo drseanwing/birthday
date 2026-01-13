@@ -609,6 +609,9 @@ app.post('/api/answer', async (req, res) => {
             return res.status(400).json({ error: 'You have already answered this question' });
         }
         
+        // Clear hint flag when submitting new answer
+        state.showHint = false;
+        
         // Process the answer
         state = processAnswer(state, player, answer, questions);
         await saveGameState(state);
