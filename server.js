@@ -190,13 +190,43 @@ async function saveGameState(state) {
  */
 async function loadQuestions() {
     try {
-        logger.debug('Loading questions from file');
+        logger.debug(`Loading questions from: ${CONFIG.QUESTIONS_FILE}`);
+        
+        // Check if file exists first
+        try {
+            await fs.access(CONFIG.QUESTIONS_FILE);
+        } catch (accessError) {
+            logger.error(`Questions file not found at: ${CONFIG.QUESTIONS_FILE}`);
+            logger.error(`Current directory: ${__dirname}`);
+            
+            // Try to list files in current directory for debugging
+            try {
+                const files = await fs.readdir(__dirname);
+                logger.error(`Files in directory: ${files.join(', ')}`);
+            } catch (e) {
+                logger.error('Could not list directory');
+            }
+            
+            throw new Error(`Questions file not found: ${CONFIG.QUESTIONS_FILE}`);
+        }
+        
         const data = await fs.readFile(CONFIG.QUESTIONS_FILE, 'utf8');
-        const questions = JSON.parse(data).questions;
+        const parsed = JSON.parse(data);
+        
+        if (!parsed.questions || !Array.isArray(parsed.questions)) {
+            throw new Error('Invalid questions file format: missing questions array');
+        }
+        
+        const questions = parsed.questions;
         logger.info(`Loaded ${questions.length} questions`);
         return questions;
     } catch (error) {
-        logger.error('Failed to load questions', { error: error.message, stack: error.stack });
+        logger.error('Failed to load questions', { 
+            error: error.message, 
+            stack: error.stack,
+            file: CONFIG.QUESTIONS_FILE,
+            cwd: process.cwd()
+        });
         throw error;
     }
 }
